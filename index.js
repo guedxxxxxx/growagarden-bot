@@ -29,14 +29,15 @@ function calculateDollarAmount(amount) {
   return amount.toFixed(2);
 }
 
-function getRobuxLink(selectedProduct) {
+function getRobuxLink(product, displayName) {
   const robuxLinks = {
     'raccoon': 'http://www.roblox.com/game-pass/1030721475/1000',
     'queen_bee': 'https://www.roblox.com/game-pass/1037487540/500',
     'disco_bee': 'https://www.roblox.com/game-pass/1041552295/1200',
     'dragonfly': 'https://www.roblox.com/game-pass/1044850980/750'
   };
-  return robuxLinks[selectedProduct] || 'https://www.roblox.com/game-pass/1031209691/50';
+  const link = robuxLinks[product] || 'https://www.roblox.com';
+  return `[Click here to buy the gamepass for ${displayName}](${link})`;
 }
 
 client.once('ready', () => {
@@ -49,58 +50,60 @@ client.on('messageCreate', async message => {
   if (message.content === '!growagarden') {
     const button = new ButtonBuilder()
       .setCustomId('open_menu')
-      .setLabel('Select Your Pet')
+      .setLabel('🛍️ Open the Pet Shop')
       .setStyle(ButtonStyle.Primary);
 
     const row = new ActionRowBuilder().addComponents(button);
 
     await message.channel.send({
-      content: `🌻 **Yo! Welcome to the Grow a Garden Pet Shop!** 🐝
+      content: `🌻 **WELCOME TO THE ULTIMATE GROW A GARDEN PET SHOP!** 🐝🌿
 
-Want to make your grinding way easier? Adopt awesome pets to boost your game and flex your garden! 🌿  
-Prices pop up after you pick a pet, and you can pay with **Litecoin (LTC)** or **Robux**.
+🎉 **Ready to transform your garden into the ultimate flex?**  
+🐾 Adopt amazing pets that boost your grinding power and show off your style!
 
-Smash the button below to start picking your pets and upgrade your game! 🐾`,
+💰 **Pricing & Payment Options:**
+- Choose your pets and see prices instantly.
+- Pay with **Litecoin (LTC)** or **Robux** via Game Passes.
+
+👉 **Smash the button below to start picking your pets and grow your garden empire!**`,
       components: [row]
     });
   }
 });
 
 client.on('interactionCreate', async interaction => {
-  if (interaction.isButton()) {
-    if (interaction.customId === 'open_menu') {
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId('category_select')
-        .setPlaceholder('Choose a category')
-        .addOptions([{ label: 'Pets', value: 'pets', emoji: '🌿' }]);
+  if (interaction.isButton() && interaction.customId === 'open_menu') {
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId('category_select')
+      .setPlaceholder('Choose a category')
+      .addOptions([{ label: 'Pets', value: 'pets', emoji: '🌿' }]);
 
-      const row = new ActionRowBuilder().addComponents(menu);
-      await interaction.reply({ content: 'Select a category below:', components: [row], ephemeral: true });
-    }
+    const row = new ActionRowBuilder().addComponents(menu);
+    await interaction.reply({ content: 'Select a category below:', components: [row], ephemeral: true });
+  }
 
-    if (interaction.customId === 'close_ticket') {
-      const channel = interaction.channel;
+  if (interaction.isButton() && interaction.customId === 'close_ticket') {
+    const channel = interaction.channel;
 
-      await interaction.reply({ content: '✅ Ticket will be closed.', ephemeral: true });
+    await interaction.reply({ content: '✅ Ticket will be closed.', ephemeral: true });
 
-      userTickets.forEach((chId, userId) => {
-        if (chId === channel.id) {
-          userTickets.delete(userId);
-          userOrders.delete(userId);
-          userItems.delete(userId);
-          userEmbeds.delete(userId);
-        }
-      });
+    userTickets.forEach((chId, userId) => {
+      if (chId === channel.id) {
+        userTickets.delete(userId);
+        userOrders.delete(userId);
+        userItems.delete(userId);
+        userEmbeds.delete(userId);
+      }
+    });
 
-      await channel.delete();
-    }
+    await channel.delete();
+  }
 
-    if (interaction.customId === 'copy_ltc') {
-      await interaction.reply({
-        content: `Click to copy:\n\`${LTC_ADDRESS}\``,
-        ephemeral: true
-      });
-    }
+  if (interaction.isButton() && interaction.customId === 'copy_ltc') {
+    await interaction.reply({
+      content: `Click to copy:\n\`${LTC_ADDRESS}\``,
+      ephemeral: true
+    });
   }
 
   if (interaction.isStringSelectMenu()) {
@@ -119,7 +122,7 @@ client.on('interactionCreate', async interaction => {
         .setPlaceholder('Choose a pet')
         .addOptions(
           pets.map(p => ({
-            label: `${p.label} (out of stock)`,
+            label: `${p.label}`,
             value: p.label.toLowerCase().replace(/ /g, '_'),
             emoji: p.emoji
           }))
@@ -142,24 +145,10 @@ client.on('interactionCreate', async interaction => {
       const selectedProduct = interaction.values[0];
       const displayName = selectedProduct.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-      const priceTable = {
-        'raccoon': 3,
-        'queen_bee': 2,
-        'disco_bee': 5,
-        'dragonfly': 2.5
-      };
-
-      const robuxPriceTable = {
-        'raccoon': 1000,
-        'queen_bee': 500,
-        'disco_bee': 1200,
-        'dragonfly': 750
-      };
-
-      const price = priceTable[selectedProduct];
-      const robuxPrice = robuxPriceTable[selectedProduct];
-      const productEmoji = pets.find(p => p.label.toLowerCase().replace(/ /g, '_') === selectedProduct)?.emoji || '🐾';
-      const productEntry = { name: displayName, emoji: productEmoji, price, robuxPrice };
+      const productInfo = pets.find(p => p.label.toLowerCase().replace(/ /g, '_') === selectedProduct);
+      const price = productInfo.price;
+      const robuxPrice = { 'raccoon': 1000, 'queen_bee': 500, 'disco_bee': 1200, 'dragonfly': 750 }[selectedProduct];
+      const productEntry = { name: displayName, emoji: productInfo.emoji, price, robuxPrice };
       const prevList = userItems.get(user.id) || [];
       const newList = [...prevList, productEntry];
       userItems.set(user.id, newList);
@@ -170,18 +159,15 @@ client.on('interactionCreate', async interaction => {
       const usd = calculateDollarAmount(total);
       const totalRobux = newList.reduce((sum, item) => sum + item.robuxPrice, 0);
 
-      const uniqueProducts = [...new Set(newList.map(item => item.name.toLowerCase().replace(/ /g, '_')))];
-      const robuxLinks = uniqueProducts.map(product => {
-        const link = getRobuxLink(product);
-        const displayName = product.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        return `🔸 **${displayName}:** [Game Pass Link](${link})`;
-      }).join('\n');
+      const robuxLinks = newList.map(item =>
+        `🔸 **${item.name}:** ${getRobuxLink(item.name.toLowerCase().replace(/ /g, '_'), item.name)}`
+      ).join('\n');
 
       const productListText = newList.map(p => `${p.emoji} ${p.name} = $${p.price} / ${p.robuxPrice} Robux`).join('\n');
 
       const embed = {
         title: '🛒 Order Summary',
-        description: `${productListText}\n\n📦 **Total:** $${usd} / ${totalRobux} Robux`,
+        description: `${productListText}\n\n📦 **Total:** $${usd} / ${totalRobux} Robux\n\n⚠️ **If you're buying more than one of the same pet, make sure to purchase each pass separately, delete your order, and buy again.**`,
         color: 0x00b0f4
       };
 
@@ -223,7 +209,7 @@ ${robuxLinks}
         const embedMsg = await existingChannel.messages.fetch(embedMsgId);
 
         await embedMsg.edit({ embeds: [embed, paymentEmbed], components: [buttonsRow] });
-        await interaction.reply({ content: '✅ Pet added to your order!', ephemeral: true });
+        await interaction.update({ content: '✅ Pet added to your order!', components: [] });
       } else {
         const channel = await guild.channels.create({
           name: `ticket-${user.username}`,
@@ -231,7 +217,7 @@ ${robuxLinks}
           permissionOverwrites: [
             { id: guild.roles.everyone, deny: [PermissionsBitField.Flags.ViewChannel] },
             { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
-            { id: guild.members.cache.get(GUEDX_ID) || GUEDX_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
+            { id: GUEDX_ID, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
           ]
         });
 
@@ -244,7 +230,7 @@ ${robuxLinks}
         userTickets.set(user.id, channel.id);
         userEmbeds.set(user.id, message.id);
 
-        await interaction.reply({ content: '✅ Ticket created and pet added!', ephemeral: true });
+        await interaction.update({ content: '✅ Ticket created and pet added!', components: [] });
       }
 
       const moreMenu = new StringSelectMenuBuilder()
