@@ -1,0 +1,15 @@
+{
+  "name": "growagarden-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for Grow a Garden shop",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
