@@ -55,12 +55,12 @@ client.on('messageCreate', async message => {
     const row = new ActionRowBuilder().addComponents(button);
 
     await message.channel.send({
-      content: `🌻 **Welcome to the Grow a Garden Shop!** 🐝
+      content: `🌻 **Yo! Welcome to the Grow a Garden Pet Shop!** 🐝
 
-Adopt cute pets to make your garden flourish!  
-Prices are shown after selection. Payment is made via **Litecoin (LTC)** or **Robux**.
+Want to make your grinding way easier? Adopt awesome pets to boost your game and flex your garden! 🌿  
+Prices pop up after you pick a pet, and you can pay with **Litecoin (LTC)** or **Robux**.
 
-Click the button below to start picking your pets! 🐾`,
+Smash the button below to start picking your pets and upgrade your game! 🐾`,
       components: [row]
     });
   }
@@ -108,10 +108,10 @@ client.on('interactionCreate', async interaction => {
 
     if (selectedId === 'category_select') {
       const pets = [
-        { label: 'Raccoon', price: 3 },
-        { label: 'Queen Bee', price: 2 },
-        { label: 'Disco Bee', price: 5 },
-        { label: 'Dragonfly', price: 2.5 }
+        { label: 'Raccoon', price: 3, emoji: '🦝' },
+        { label: 'Queen Bee', price: 2, emoji: '🐝' },
+        { label: 'Disco Bee', price: 5, emoji: '🪩' },
+        { label: 'Dragonfly', price: 2.5, emoji: '🐉' }
       ];
 
       const menu = new StringSelectMenuBuilder()
@@ -121,7 +121,7 @@ client.on('interactionCreate', async interaction => {
           pets.map(p => ({
             label: `${p.label} (out of stock)`,
             value: p.label.toLowerCase().replace(/ /g, '_'),
-            emoji: '🐾'
+            emoji: p.emoji
           }))
         );
 
@@ -130,6 +130,13 @@ client.on('interactionCreate', async interaction => {
     }
 
     if (selectedId === 'product_select') {
+      const pets = [
+        { label: 'Raccoon', price: 3, emoji: '🦝' },
+        { label: 'Queen Bee', price: 2, emoji: '🐝' },
+        { label: 'Disco Bee', price: 5, emoji: '🪩' },
+        { label: 'Dragonfly', price: 2.5, emoji: '🐉' }
+      ];
+
       const user = interaction.user;
       const guild = interaction.guild;
       const selectedProduct = interaction.values[0];
@@ -151,7 +158,8 @@ client.on('interactionCreate', async interaction => {
 
       const price = priceTable[selectedProduct];
       const robuxPrice = robuxPriceTable[selectedProduct];
-      const productEntry = { name: displayName, emoji: '🐾', price, robuxPrice };
+      const productEmoji = pets.find(p => p.label.toLowerCase().replace(/ /g, '_') === selectedProduct)?.emoji || '🐾';
+      const productEntry = { name: displayName, emoji: productEmoji, price, robuxPrice };
       const prevList = userItems.get(user.id) || [];
       const newList = [...prevList, productEntry];
       userItems.set(user.id, newList);
