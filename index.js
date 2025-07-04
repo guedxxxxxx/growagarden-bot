@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const {
   Client,
   GatewayIntentBits,
@@ -18,10 +20,10 @@ const client = new Client({
 const GUEDX_ID = '955969285686181898';
 const LTC_ADDRESS = 'ltc1qr3lqtfc4em5mkfjrhjuh838nnhnpswpfxtqsu8';
 
-const userTickets = new Map(); // userId => channelId
-const userOrders = new Map();  // userId => totalUSD
-const userItems = new Map();   // userId => [{name, emoji, price}]
-const userEmbeds = new Map();  // userId => messageId
+const userTickets = new Map();
+const userOrders = new Map();
+const userItems = new Map();
+const userEmbeds = new Map();
 
 function calculateDollarAmount(amount) {
   return amount.toFixed(2);
