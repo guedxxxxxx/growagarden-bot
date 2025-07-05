@@ -60,12 +60,13 @@ client.on('messageCreate', async message => {
     const row = new ActionRowBuilder().addComponents(button);
 
     await message.channel.send({
-      content: `🌻 **YO! WELCOME TO THE GROW A GARDEN PET SHOP!** 🐝
+      content: `🌿🐾 **Welcome to my Grow a Garden Shop** 🐾🌿
 
-Want to make your grinding WAY easier? Adopt awesome pets to BOOST your game and FLEX your garden! 🌿  
-Prices pop up after you pick a pet, and you can pay with **Litecoin (LTC)** or **Robux**.
+📦 Looking to speed up your grind or gain an advantage in Grow a Garden? This shop offers a selection of in-game products, including 🐕‍🔥 pets that provide performance boosts, improve farming efficiency 🌱, and help you stand out while progressing through the game. 🧪⚙️
 
-Smash the button below to START picking your pets and UPGRADE your game! 🐾`,
+🪙 Prices are revealed after selecting an item. Payments are accepted via **Litecoin (LTC)** 🪙 or **Robux** 💵.
+
+🛒 Tap the button below to view available items and purchase what you need to grow stronger, grind faster, and stay ahead. 📊🌾🔧`,
       components: [row]
     });
   }
